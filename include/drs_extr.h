@@ -392,13 +392,13 @@ VOID APMlmeSetTxRate(
 	IN RTMP_RA_LEGACY_TB *pTxRate);
 #endif /* CONFIG_AP_SUPPORT */
 
+VOID MlmeDynamicTxRateSwitching(
+	IN struct _RTMP_ADAPTER *pAd);
+
 #ifdef CONFIG_STA_SUPPORT
 NTSTATUS MtCmdMlmeDynamicTxRateSwitching(
 	IN struct _RTMP_ADAPTER *pAd, 
 	IN PCmdQElmt CMDQelmt);
-
-VOID MlmeDynamicTxRateSwitching(
-	IN struct _RTMP_ADAPTER *pAd);
 
 VOID StaQuickResponeForRateUpExec(
 	IN PVOID SystemSpecific1, 

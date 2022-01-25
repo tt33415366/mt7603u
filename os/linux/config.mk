@@ -67,7 +67,7 @@ HAS_BCN_EVENT_UPDATE_SUPPORT=y
 #ifdef NATIVE_WPA_SUPPLICANT_SUPPORT
 # Support Native WpaSupplicant for Network Maganger
 # i.e. wpa_supplicant -Dwext
-HAS_NATIVE_WPA_SUPPLICANT_SUPPORT=n
+HAS_NATIVE_WPA_SUPPLICANT_SUPPORT=y
 #endif // NATIVE_WPA_SUPPLICANT_SUPPORT //
 
 #Support Net interface block while Tx-Sw queue full
@@ -266,20 +266,20 @@ HAS_GREENAP_SUPPORT=n
 #our driver references to its symbol.
 HAS_CFG80211_SUPPORT=y
 #smooth the scan signal for cfg80211 based driver
-HAS_CFG80211_SCAN_SIGNAL_AVG_SUPPORT=n
+HAS_CFG80211_SCAN_SIGNAL_AVG_SUPPORT=y
 #control two STA using wpa_supplicant
 HAS_CFG80211_MULTI_STA_SUPPORT=n
 #Cfg80211-based P2P Support
-HAS_CFG80211_P2P_SUPPORT=y
+HAS_CFG80211_P2P_SUPPORT=n
 #Cfg80211-based P2P Mode Selection (must one be chosen)
-HAS_CFG80211_P2P_CONCURRENT_DEVICE=y
+HAS_CFG80211_P2P_CONCURRENT_DEVICE=n
 HAS_CFG80211_P2P_SINGLE_DEVICE=n
 HAS_CFG80211_P2P_STATIC_CONCURRENT_DEVICE=n
 HAS_CFG80211_BUILD_CHANNEL_LIST=y
 HAS_CFG80211_P2P_MULTI_CHAN_SUPPORT=n
 
 #Cfg80211-based TDLS support
-HAS_CFG80211_TDLS_SUPPORT=y
+HAS_CFG80211_TDLS_SUPPORT=n
 #For android wifi priv-lib (cfg80211_based wpa_supplicant cmd expansion)
 HAS_CFG80211_ANDROID_PRIV_LIB_SUPPORT=n
 
@@ -2377,6 +2377,7 @@ export CFLAGS
 endif
 
 
+WFLAGS += -Wno-error=unused-function -Wno-error=misleading-indentation -g
 EXTRA_CFLAGS += -I$(RT28xx_DIR)/include -I$(LINUX_SRC)/include -I$(RT28xx_DIR)/include -I$(LINUX_SRC)/arch/arm/include $(WFLAGS)
 export EXTRA_CFLAGS
 

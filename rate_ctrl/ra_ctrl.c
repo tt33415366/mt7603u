@@ -3355,7 +3355,9 @@ VOID RTMPSetSupportMCS(
 			else
 #endif /* MESH_SUPPORT */
 				pDesired_ht_phy = &pAd->ApCfg.MBSSID[pEntry->func_tb_idx].wdev.DesiredHtPhyInfo;
+#ifdef APCLI_SUPPORT
 			}
+#endif /* APCLI_SUPPORT */
 		}
 #endif /* CONFIG_AP_SUPPORT */
 

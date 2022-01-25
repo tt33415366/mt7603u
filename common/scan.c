@@ -40,6 +40,7 @@ static INT scan_ch_restore(RTMP_ADAPTER *pAd, UCHAR OpMode)
 	struct wifi_dev *p2p_wdev = &pMbss->wdev;
 	struct wifi_dev *wdev;
 
+#ifdef RT_CFG80211_P2P_SUPPORT
 	if(RTMP_CFG80211_VIF_P2P_GO_ON(pAd) )
 	{
 		p2p_wdev = &pMbss->wdev;
@@ -48,12 +49,19 @@ static INT scan_ch_restore(RTMP_ADAPTER *pAd, UCHAR OpMode)
 	{
 		p2p_wdev = &pApCliEntry->wdev;
 	}
+#endif /* RT_CFG80211_P2P_SUPPORT */
 
-	if(INFRA_ON(pAd) && (!RTMP_CFG80211_VIF_P2P_GO_ON(pAd)))
+	if(INFRA_ON(pAd) 
+#ifdef RT_CFG80211_P2P_SUPPORT
+		&& (!RTMP_CFG80211_VIF_P2P_GO_ON(pAd))
+#endif /* RT_CFG80211_P2P_SUPPORT */
+		)
 	{
+#ifdef CONFIG_STA_SUPPORT
 		//this should be resotre to infra sta!!
 		wdev = &pAd->StaCfg.wdev;
 	       bbp_set_bw(pAd, pAd->StaCfg.wdev.bw);
+#endif /* CONFIG_STA_SUPPORT */
 	}
 	else		
 #endif /* defined(RT_CFG80211_SUPPORT) && defined(RT_CFG80211_P2P_CONCURRENT_DEVICE) */
@@ -93,8 +101,10 @@ static INT scan_ch_restore(RTMP_ADAPTER *pAd, UCHAR OpMode)
 #if defined(RT_CFG80211_SUPPORT) && defined(RT_CFG80211_P2P_CONCURRENT_DEVICE)
         if (INFRA_ON(pAd))
         {
+#ifdef CONFIG_STA_SUPPORT
 		bw = pAd->StaCfg.wdev.bw;
 		bbp_set_bw(pAd, (UINT8)bw);
+#endif /* CONFIG_STA_SUPPORT */
 
         }
  	else if (RTMP_CFG80211_VIF_P2P_GO_ON(pAd) && (ch != p2p_wdev->channel) && (p2p_wdev->CentralChannel != 0))
@@ -747,6 +757,8 @@ VOID ScanNextChannel(RTMP_ADAPTER *pAd, UCHAR OpMode)
 	/* Since the Channel List is from Upper layer */
 	if (CFG80211DRV_OpsScanRunning(pAd) && !ScanPending)
 	{
+
+#ifdef RT_CFG80211_P2P_SUPPORT
 		if (RTMP_CFG80211_VIF_P2P_GO_ON(pAd))
 		{
 			DBGPRINT(RT_DEBUG_OFF, ("%s():Scan Only Go Channel %d\n", __FUNCTION__, pAd->CommonCfg.Channel));
@@ -761,6 +773,7 @@ VOID ScanNextChannel(RTMP_ADAPTER *pAd, UCHAR OpMode)
 			}
 		}
 		else
+#endif /* RT_CFG80211_P2P_SUPPORT */
 		{
 			pAd->ScanCtrl.Channel = (UCHAR)CFG80211DRV_OpsScanGetNextChannel(pAd);
 		}
@@ -906,9 +919,11 @@ VOID ScanNextChannel(RTMP_ADAPTER *pAd, UCHAR OpMode)
 				stay_time = MAX_CHANNEL_TIME;
 		}
 		
+#ifdef RT_CFG80211_P2P_SUPPORT
 		if (RTMP_CFG80211_VIF_P2P_CLI_ON(pAd)){
 			stay_time = P2P_CLI_ON_SCAN_TIME;
 		}
+#endif /* RT_CFG80211_P2P_SUPPORT */
 		
 #ifdef CONFIG_STA_SUPPORT
 #ifdef RT_CFG80211_SUPPORT
@@ -924,6 +939,7 @@ VOID ScanNextChannel(RTMP_ADAPTER *pAd, UCHAR OpMode)
 			
 		if (SCAN_MODE_ACT(ScanType))
 		{
+#ifdef CONFIG_STA_SUPPORT
 			if (pAd->MlmeAux.params.FlgScanThisSsid) {
 				int i;
 				for (i = 0; i < pAd->MlmeAux.params.num_ssids; ++i) {
@@ -934,8 +950,10 @@ VOID ScanNextChannel(RTMP_ADAPTER *pAd, UCHAR OpMode)
 					if (scan_active(pAd, OpMode, ScanType) == FALSE)
 						return;
 				}
-			} else if (scan_active(pAd, OpMode, ScanType) == FALSE)
-				return;
+			} else 
+#endif /* CONFIG_STA_SUPPORT */
+				if (scan_active(pAd, OpMode, ScanType) == FALSE)
+					return;
 
 #ifdef CONFIG_STA_SUPPORT
 			if ((ScanType == SCAN_ACTIVE) &&

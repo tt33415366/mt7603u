@@ -216,6 +216,7 @@ INT32 NullFramePM0TxSHandler(RTMP_ADAPTER *pAd, CHAR *Data, UINT32 Priv)
 
 INT32 RTMPWaitNullFrameTxDone(RTMP_ADAPTER *pAd)
 {
+#ifdef RT_CFG80211_SUPPORT
 #define WAIT_TXS_TIME	(10)	// 10 ms
 
 	ULONG ulBeforeSendMgmtFr, ulAfterSendMgmtFr, uldiff;
@@ -262,6 +263,9 @@ INT32 RTMPWaitNullFrameTxDone(RTMP_ADAPTER *pAd)
 		DBGPRINT(RT_DEBUG_TRACE,("%s, Tx status acked secceed.\n", __func__));
 		return 0;
 	}
+#else
+	return 0;
+#endif
 }
 
 INT32 PsDataTxSHandler(RTMP_ADAPTER *pAd, CHAR *Data, UINT32 Priv)
@@ -280,11 +284,13 @@ INT32 PsDataTxSHandler(RTMP_ADAPTER *pAd, CHAR *Data, UINT32 Priv)
 
 static INT32 MgmtTxSHandler(RTMP_ADAPTER *pAd, CHAR *Data, UINT32 Priv)
 {
+#ifdef RT_CFG80211_SUPPORT
 	PCFG80211_CTRL pCfg80211_ctrl = &pAd->cfg80211_ctrl;
 	DBGPRINT(RT_DEBUG_TRACE, ("%s(%d)Got mgmt TXS\n", __func__, __LINE__));
 	/*CFG80211 mgmt tx status report*/
 	if(pCfg80211_ctrl->TxStatusInUsed && pCfg80211_ctrl->IsNeedTxStatus)
 		CFG80211_MgmtTxS(pAd, Data);
+#endif /* RT_CFG80211_SUPPORT */
 	return 0;
 }
 

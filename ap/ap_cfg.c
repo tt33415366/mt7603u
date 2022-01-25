@@ -2027,7 +2027,7 @@ INT RTMPAPSetInformation(
 	            break;
 
 		case OID_802_11_DISASSOCIATE:
-
+#ifdef APCLI_SUPPORT
 			if (pObj->ioctl_if_type != INT_APCLI)
 				return FALSE;
 
@@ -2042,7 +2042,9 @@ INT RTMPAPSetInformation(
 
 			DBGPRINT(RT_DEBUG_TRACE, ("Set::OID_802_11_DISASSOCIATE	\n"));
 
+#ifdef CONFIG_STA_SUPPORT
 			DisassocParmFill(pAd, &DisassocReq, pAd->MlmeAux.Bssid, REASON_DISASSOC_STA_LEAVING);
+#endif /* CONFIG_STA_SUPPORT */
 
 			MlmeEnqueue(pAd, APCLI_ASSOC_STATE_MACHINE, APCLI_MT2_MLME_DISASSOC_REQ,
 					sizeof(MLME_DISASSOC_REQ_STRUCT), &DisassocReq, ifIndex);
@@ -2053,12 +2055,14 @@ INT RTMPAPSetInformation(
 			/* set the apcli interface be invalid. */
 			pApCliEntry->Valid = FALSE;
 
+#ifdef CONFIG_STA_SUPPORT
 			/* clear MlmeAux.Ssid and Bssid. */
 			NdisZeroMemory(pAd->MlmeAux.Bssid, MAC_ADDR_LEN);
 			pAd->MlmeAux.SsidLen = 0;
 			NdisZeroMemory(pAd->MlmeAux.Ssid, MAX_LEN_OF_SSID);
 			pAd->MlmeAux.Rssi = 0;
-
+#endif /* CONFIG_STA_SUPPORT */
+#endif /* APCLI_SUPPORT */
 			*pCurrState = APCLI_CTRL_DEASSOC;
 			break;
 
@@ -2488,11 +2492,13 @@ INT RTMPAPSetInformation(
 					/* set the apcli interface be invalid.*/
 					pApCliEntry->Valid = FALSE;
 
+#ifdef CONFIG_STA_SUPPORT
 					/* clear MlmeAux.Ssid and Bssid.*/
 					NdisZeroMemory(pAd->MlmeAux.Bssid, MAC_ADDR_LEN);
 					pAd->MlmeAux.SsidLen = 0;
 					NdisZeroMemory(pAd->MlmeAux.Ssid, MAX_LEN_OF_SSID);
 					pAd->MlmeAux.Rssi = 0;
+#endif /* CONFIG_STA_SUPPORT */
 
 					*pCurrState = APCLI_CTRL_DISCONNECTED;
 					if(pInfo)

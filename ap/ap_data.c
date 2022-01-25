@@ -3789,8 +3789,13 @@ NDIS_STATUS APHardTransmit(RTMP_ADAPTER *pAd, TX_BLK *pTxBlk)
 
 	/*DTV00663496*/
 	/* if device is not in AP MODE, and the p2p GO interface is down, release the packet form TX queue avoid crash issue.*/
+#ifdef RT_CFG80211_SUPPORT
 	if ((pAd->cfg80211_ctrl.isCfgInApMode != RT_CMD_80211_IFTYPE_AP)
-		&& (!RTMP_CFG80211_VIF_P2P_GO_ON(pAd)) && (!RTMP_CFG80211_VIF_P2P_CLI_ON(pAd)))
+#ifdef RT_CFG80211_P2P_SUPPORT
+		&& (!RTMP_CFG80211_VIF_P2P_GO_ON(pAd)) && (!RTMP_CFG80211_VIF_P2P_CLI_ON(pAd))
+#endif /* RT_CFG80211_P2P_SUPPORT */
+		)
+#endif /* RT_CFG80211_SUPPORT */
 	{
 		DBGPRINT(RT_DEBUG_TRACE, ("%s(%d) device is not in AP MODE,and the p2p GO interface is down, release the packet!\n", __FUNCTION__, __LINE__));
 		if (pPacket)

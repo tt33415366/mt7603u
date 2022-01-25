@@ -2378,7 +2378,11 @@ DBGPRINT(RT_DEBUG_OFF, ("%s():  AdHoc-No my BSSID(Peer=>%02x:%02x:%02x:%02x:%02x
 	}
 #endif /* WFA_VHT_PF */
 
+#ifdef CONFIG_AP_SUPPORT
+#ifdef APCLI_SUPPORT
 ret: 
+#endif
+#endif
 	hdr_len = LENGTH_802_11;
 
 	return hdr_len;
@@ -3431,8 +3435,10 @@ BOOLEAN rtmp_rx_done_handle(RTMP_ADAPTER *pAd)
 	PNDIS_PACKET pRxPacket;
 	HEADER_802_11 *pHeader;
 	RX_BLK rxblk, *pRxBlk = NULL;
+#ifdef RT_CFG80211_SUPPORT
 	BSS_STRUCT *pMbss;
 	struct wifi_dev *wdev;
+#endif
 
 	DBGPRINT(RT_DEBUG_FPGA, ("-->%s():\n", __FUNCTION__));
 
@@ -3791,6 +3797,7 @@ BOOLEAN rtmp_rx_done_handle(RTMP_ADAPTER *pAd)
 		INC_COUNTER64(pAd->WlanCounters.ReceivedFragmentCount);
 #endif /* STATS_COUNT_SUPPORT */
 
+#ifdef RT_CFG80211_SUPPORT
 		pMbss = &pAd->ApCfg.MBSSID[CFG_GO_BSSID_IDX];
 		wdev = &pMbss->wdev;
 
@@ -3804,6 +3811,7 @@ BOOLEAN rtmp_rx_done_handle(RTMP_ADAPTER *pAd)
 			RELEASE_NDIS_PACKET(pAd,pRxPacket,NDIS_STATUS_FAILURE);
 			continue;
 		}
+#endif
 
 
 		/* Check for all RxD errors */

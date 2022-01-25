@@ -2256,9 +2256,11 @@ int CFG80211_OpsSetRekeyData(struct wiphy *wiphy, struct net_device *dev,
 
 	MAC80211_PAD_GET(pAdSrc, wiphy);
 	pAd = (PRTMP_ADAPTER)pAdSrc;
+#if (defined(WOW_SUPPORT) && defined(RTMP_MAC_USB)) || defined(MT_WOW_SUPPORT)
 	NdisCopyMemory(pAd->WOW_Cfg.PTK, data->kck, LEN_PTK_KCK);
 	NdisCopyMemory(&pAd->WOW_Cfg.PTK[LEN_PTK_KCK], data->kek, LEN_PTK_KEK);
 	NdisCopyMemory(pAd->WOW_Cfg.ReplayCounter, data->replay_ctr, LEN_KEY_DESC_REPLAY);
+#endif /* (defined(WOW_SUPPORT) && defined(RTMP_MAC_USB)) || defined(MT_WOW_SUPPORT) */
 
 	return 0;
 }

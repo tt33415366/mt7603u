@@ -90,7 +90,7 @@ static inline void netdev_priv_set(struct net_device *dev, void *priv)
 }
 
 
-ULONG RTDebugLevel = RT_DEBUG_ERROR;
+ULONG RTDebugLevel = RT_DEBUG_WARN;
 ULONG RTDebugFunc = 0;
 
 #ifdef OS_ABL_FUNC_SUPPORT
@@ -1421,7 +1421,9 @@ int RtmpOSWrielessEventSend(
 	else
 		wrqu.data.length = 0;
 
+#ifdef RT_CFG80211_SUPPORT
 	wireless_send_event(pNetDev, eventType, &wrqu, (char *)pData);
+#endif /* RT_CFG80211_SUPPORT */
 #endif
 	return 0;
 }
@@ -1455,7 +1457,9 @@ int RtmpOSWrielessEventSendExt(
 
 	wrqu.addr.sa_family = (sa_family_t)family;
 
+#ifdef RT_CFG80211_SUPPORT
 	wireless_send_event(pNetDev, eventType, &wrqu, (char *)pData);
+#endif /* RT_CFG80211_SUPPORT */
 	return 0;
 }
 

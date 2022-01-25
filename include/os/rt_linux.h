@@ -1526,7 +1526,6 @@ void usb_iot_add_padding(struct urb *urb, UINT8 *buf, ra_dma_addr_t dma);
 	kfree(_addr); \
 })
 #else
-
 #define RTUSB_URB_ALLOC_BUFFER(_dev, _size, _dma)	usb_alloc_coherent(_dev, _size, GFP_ATOMIC, _dma)
 #define RTUSB_URB_FREE_BUFFER(_dev, _size, _addr, _dma)	usb_free_coherent(_dev, _size, _addr, _dma)
 #endif /*USB_BULK_BUF_PREALLOC*/

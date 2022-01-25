@@ -1624,7 +1624,10 @@ VOID MacTableMaintenance(RTMP_ADAPTER *pAd)
 		}
 #endif
 		if (pEntry->NoDataIdleCount >= pEntry->StaIdleTimeout 
-			|| (RTMP_CFG80211_VIF_P2P_GO_ON(pAd) && (pEntry->NoDataIdleCount >= MAC_TABLE_MIN_AGEOUT_TIME)))
+#ifdef RT_CFG80211_P2P_SUPPORT
+			|| (RTMP_CFG80211_VIF_P2P_GO_ON(pAd) && (pEntry->NoDataIdleCount >= MAC_TABLE_MIN_AGEOUT_TIME))
+#endif /* RT_CFG80211_P2P_SUPPORT */
+		   )
 		{
 			bDisconnectSta = TRUE;
 			DBGPRINT(RT_DEBUG_WARN, ("ageout %02x:%02x:%02x:%02x:%02x:%02x after %d-sec silence\n",

@@ -2953,9 +2953,10 @@ INT32 AndesMTEraseFw(RTMP_ADAPTER *pAd)
 
 	if (cap->load_code_method == BIN_FILE_METHOD) {
 
-		if (cap->FWImageName)
+		if (cap->FWImageName) {
 			os_free_mem(NULL, cap->FWImageName);
 			cap->FWImageName = NULL;
+		}
 	}
 
 	return 0;

@@ -1159,7 +1159,7 @@ INT CFG80211_setApDefaultKey(
 #ifdef RT_CFG80211_P2P_SUPPORT
 	pAd->ApCfg.MBSSID[CFG_GO_BSSID_IDX].wdev.DefaultKeyId = (UCHAR)Data;
 #else
-	pAd->ApCfg.MBSSID[MAIN_MBSSID].wdev.DefaultKeyId = UCHAR)Data;
+	pAd->ApCfg.MBSSID[MAIN_MBSSID].wdev.DefaultKeyId = (UCHAR)Data;
 #endif /*RT_CFG80211_P2P_SUPPORT*/
 	
 	return 0;	

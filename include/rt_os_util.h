@@ -567,12 +567,14 @@ BOOLEAN RtmpOsCmdDisplayLenCheck(
 	IN	UINT32					LenSrc,
 	IN	UINT32					Offset);
 
+#ifdef WPA_SUPPLICANT_SUPPORT
 VOID WpaSendMicFailureToWpaSupplicant(
 	IN PNET_DEV pNetDev,
 	IN const PUCHAR src_addr,
 	IN BOOLEAN bUnicast,
 	IN INT key_id,
 	IN const PUCHAR tsc);
+#endif /* WPA_SUPPLICANT_SUPPORT */
 
 int wext_notify_event_assoc(
 	IN	PNET_DEV				pNetDev,

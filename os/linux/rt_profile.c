@@ -1302,7 +1302,7 @@ INT RTMP_AP_IoctlPrepare(RTMP_ADAPTER *pAd, VOID *pCB)
 	USHORT index;
 	INT	Status = NDIS_STATUS_SUCCESS;
 #ifdef CONFIG_APSTA_MIXED_SUPPORT
-	INT cmd = 0xff;
+	INT cmd __attribute__((unused)) = 0xff;
 #endif /* CONFIG_APSTA_MIXED_SUPPORT */
 
 

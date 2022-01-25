@@ -53,9 +53,13 @@ VOID CFG80211_RemainOnChannelInit(RTMP_ADAPTER *pAd)
 
 UINT32 CFG80211_GetRestoreChannelTime(RTMP_ADAPTER *pAd)
 {
-	if (INFRA_ON(pAd)|| 
+	if (INFRA_ON(pAd) 
+#ifdef RT_CFG80211_P2P_SUPPORT
+			||
 			RTMP_CFG80211_VIF_P2P_GO_ON(pAd)|| 
-			(RTMP_CFG80211_VIF_P2P_CLI_ON(pAd) && RTMP_CFG80211_VIF_P2P_CLI_CONNECTED(pAd)))
+			(RTMP_CFG80211_VIF_P2P_CLI_ON(pAd) && RTMP_CFG80211_VIF_P2P_CLI_CONNECTED(pAd))
+#endif /* RT_CFG80211_P2P_SUPPORT */
+			)
 	{
 		return RESTORE_CH_TIME;
 	}
@@ -84,21 +88,31 @@ VOID CFG80211RemainOnChannelTimeout(
 	}
 
 	/* Restore to infra channel and its bandwidth */
-	if (INFRA_ON(pAd)|| 
+	if (INFRA_ON(pAd)
+#ifdef P2P_SUPPORT
+			|| 
 			RTMP_CFG80211_VIF_P2P_GO_ON(pAd)|| 
-			RTMP_CFG80211_VIF_P2P_CLI_CONNECTED(pAd))
+			RTMP_CFG80211_VIF_P2P_CLI_CONNECTED(pAd)
+#endif /* P2P_SUPPORT */
+			)
 	{
 		/* For HT@20 */
-		if ((pAd->LatchRfRegs.Channel != pAd->CommonCfg.Channel) ||
-				(RTMP_CFG80211_VIF_P2P_CLI_CONNECTED(pAd) && (pAd->LatchRfRegs.Channel != pApCliEntry->MlmeAux.Channel)))
+		if ((pAd->LatchRfRegs.Channel != pAd->CommonCfg.Channel)
+#ifdef RT_CFG80211_P2P_CONCURRENT_DEVICE
+				|| (RTMP_CFG80211_VIF_P2P_CLI_CONNECTED(pAd) && (pAd->LatchRfRegs.Channel != pApCliEntry->MlmeAux.Channel))
+#endif /* RT_CFG80211_P2P_CONCURRENT_DEVICE */
+			)
 		{
 			RestoreChannel = pAd->CommonCfg.Channel;
 			RestoreWidth = BW_20;
 		}
 
 		/* For HT@40 */
-		if ((pAd->CommonCfg.Channel != pAd->CommonCfg.CentralChannel) ||
-				(RTMP_CFG80211_VIF_P2P_CLI_CONNECTED(pAd) && (pApCliEntry->MlmeAux.Channel != pApCliEntry->MlmeAux.CentralChannel)))
+		if ((pAd->CommonCfg.Channel != pAd->CommonCfg.CentralChannel) 
+#ifdef RT_CFG80211_P2P_CONCURRENT_DEVICE
+				|| (RTMP_CFG80211_VIF_P2P_CLI_CONNECTED(pAd) && (pApCliEntry->MlmeAux.Channel != pApCliEntry->MlmeAux.CentralChannel))
+#endif /* RT_CFG80211_P2P_CONCURRENT_DEVICE */
+				)
 		{
 			RestoreChannel = pAd->CommonCfg.CentralChannel;
 			RestoreWidth = BW_40;
@@ -124,9 +138,11 @@ VOID CFG80211RemainOnChannelTimeout(
 			{
 				DBGPRINT(RT_DEBUG_TRACE, ("CONCURRENT STA PWR_ACTIVE ROC_END\n"));
 
+#ifdef CONFIG_STA_SUPPORT
 				RTMPSendNullFrame(pAd, pAd->CommonCfg.TxRate,
 						(OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_WMM_INUSED) ? TRUE:FALSE),
 						pAd->CommonCfg.bAPSDForcePowerSave ? PWR_SAVE : pAd->StaCfg.Psm);
+#endif /* CONFIG_STA_SUPPORT */
 
 				RTMPSetTimer(&pCfg80211_ctrl->Cfg80211RocTimer, CFG80211_GetRestoreChannelTime(pAd));
 
@@ -139,6 +155,7 @@ VOID CFG80211RemainOnChannelTimeout(
 				return;
 			}
 
+#ifdef P2P_SUPPORT
 			if (RTMP_CFG80211_VIF_P2P_GO_ON(pAd))
 			{
 				/* TODO: NOA? */
@@ -159,8 +176,10 @@ VOID CFG80211RemainOnChannelTimeout(
 
 			if (RTMP_CFG80211_VIF_P2P_CLI_CONNECTED(pAd))
 			{
+#ifdef RT_CFG80211_P2P_CONCURRENT_DEVICE
 				DBGPRINT(RT_DEBUG_TRACE, ("CFG80211_ROC: ROC_Timeout APCLI_ON Channel: %d\n", 
 							pApCliEntry->MlmeAux.Channel));
+#endif
 				CFG80211_P2pClientSendNullFrame(pAd, PWR_ACTIVE);
 				RTMPSetTimer(&pCfg80211_ctrl->Cfg80211RocTimer, CFG80211_GetRestoreChannelTime(pAd));
 
@@ -172,6 +191,7 @@ VOID CFG80211RemainOnChannelTimeout(
 				}
 				return;
 			}
+#endif /* P2P_SUPPORT */
 		}
 	}
 
@@ -197,10 +217,14 @@ BOOLEAN CFG80211DRV_OpsRemainOnChannel(VOID *pAdOrg, VOID *pData, UINT32 duratio
 {
 	PRTMP_ADAPTER pAd = (PRTMP_ADAPTER)pAdOrg;
 	CMD_RTPRIV_IOCTL_80211_CHAN *pChanInfo = (CMD_RTPRIV_IOCTL_80211_CHAN *) pData;
+#ifdef RT_CFG80211_P2P_SUPPORT
 	BOOLEAN Cancelled;
+#endif /* RT_CFG80211_P2P_SUPPORT */
 	PCFG80211_CTRL pCfg80211_ctrl = &pAd->cfg80211_ctrl;
 	UCHAR lock_channel = pChanInfo->ChanId;
+#ifdef CONFIG_STA_SUPPORT
 	INT32 iRes = -1;
+#endif
 
 	CFG80211DBG(RT_DEBUG_TRACE, ("%s\n", __FUNCTION__));
 
@@ -257,11 +281,13 @@ BOOLEAN CFG80211DRV_OpsRemainOnChannel(VOID *pAdOrg, VOID *pData, UINT32 duratio
 				DBGPRINT(RT_DEBUG_ERROR, ("[warning]%s(%d):Tx buffer have data.\n", __FUNCTION__, __LINE__));
 			}
 
+#ifdef CONFIG_STA_SUPPORT
 			iRes = RTMPSendNullFrameAndWaitStatus(pAd, PWR_SAVE);
 			if(iRes == -1)
 			{
 				DBGPRINT(RT_DEBUG_WARN, ("%s(line=%d):Send null frame error.\n", __FUNCTION__, __LINE__));
 			}
+#endif 
 		}	
 
 #ifdef RT_CFG80211_P2P_CONCURRENT_DEVICE
@@ -287,12 +313,14 @@ BOOLEAN CFG80211DRV_OpsRemainOnChannel(VOID *pAdOrg, VOID *pData, UINT32 duratio
 	/* ROC Timer Init */
 	CFG80211_RemainOnChannelInit(pAd);
 
+#ifdef RT_CFG80211_P2P_SUPPORT
 	if (RTMP_CFG80211_ROC_ON(pAd))
 	{
 		CFG80211DBG(RT_DEBUG_TRACE, ("%s CANCEL Cfg80211RocTimer\n", __FUNCTION__));
 		RTMPCancelTimer(&pCfg80211_ctrl->Cfg80211RocTimer, &Cancelled);
 		pCfg80211_ctrl->Cfg80211RocTimerRunning = FALSE;
 	}
+#endif /* RT_CFG80211_P2P_SUPPORT */
 
 	/* In case of ROC is not for listen state */
 	if (duration < MAX_ROC_TIME)	
@@ -321,28 +349,42 @@ BOOLEAN CFG80211DRV_OpsCancelRemainOnChannel(VOID *pAdOrg, UINT32 cookie)
 
 	CFG80211DBG(RT_DEBUG_TRACE, ("%s\n", __FUNCTION__));
 
+#ifdef RT_CFG80211_P2P_SUPPORT
 	if (!RTMP_CFG80211_ROC_ON(pAd))
+#endif /* RT_CFG80211_P2P_SUPPORT */
 	{
 		CFG80211DBG(RT_DEBUG_TRACE, ("%s: No running ROC\n", __FUNCTION__));
 		return TRUE;
 	}	
 
 	/* Check if other link exists, or do not channel switch */
-	if (INFRA_ON(pAd)|| 
+	if (INFRA_ON(pAd)
+#ifdef P2P_SUPPORT
+			|| 
 			RTMP_CFG80211_VIF_P2P_GO_ON(pAd)|| 
-			RTMP_CFG80211_VIF_P2P_CLI_CONNECTED(pAd))
+			RTMP_CFG80211_VIF_P2P_CLI_CONNECTED(pAd)
+#endif /* P2P_SUPPORT */
+			)
 	{
 		/* For HT@20 */
-		if ((pAd->LatchRfRegs.Channel != pAd->CommonCfg.Channel) ||
-				(RTMP_CFG80211_VIF_P2P_CLI_CONNECTED(pAd) && (pAd->LatchRfRegs.Channel != pApCliEntry->MlmeAux.Channel)))
+		if ((pAd->LatchRfRegs.Channel != pAd->CommonCfg.Channel) 
+#ifdef RT_CFG80211_P2P_CONCURRENT_DEVICE
+				||
+				(RTMP_CFG80211_VIF_P2P_CLI_CONNECTED(pAd) && (pAd->LatchRfRegs.Channel != pApCliEntry->MlmeAux.Channel))
+#endif
+				)
 		{
 			RestoreChannel = pAd->CommonCfg.Channel;
 			RestoreWidth = BW_20;
 		}
 
 		/* For HT@40 */
-		if ((pAd->CommonCfg.Channel != pAd->CommonCfg.CentralChannel) ||
-				(RTMP_CFG80211_VIF_P2P_CLI_CONNECTED(pAd) && (pApCliEntry->MlmeAux.Channel != pApCliEntry->MlmeAux.CentralChannel)))
+		if ((pAd->CommonCfg.Channel != pAd->CommonCfg.CentralChannel) 
+#ifdef RT_CFG80211_P2P_CONCURRENT_DEVICE
+				||
+				(RTMP_CFG80211_VIF_P2P_CLI_CONNECTED(pAd) && (pApCliEntry->MlmeAux.Channel != pApCliEntry->MlmeAux.CentralChannel))
+#endif /* RT_CFG80211_P2P_CONCURRENT_DEVICE */
+				)
 		{
 			RestoreChannel = pAd->CommonCfg.CentralChannel;
 			RestoreWidth = BW_40;
@@ -365,9 +407,11 @@ BOOLEAN CFG80211DRV_OpsCancelRemainOnChannel(VOID *pAdOrg, UINT32 cookie)
 
 			if (INFRA_ON(pAd))
 			{
+#ifdef CONFIG_STA_SUPPORT
 				RTMPSendNullFrame(pAd, pAd->CommonCfg.TxRate,
 						(OPSTATUS_TEST_FLAG(pAd, fOP_STATUS_WMM_INUSED) ? TRUE:FALSE),
 						pAd->CommonCfg.bAPSDForcePowerSave ? PWR_SAVE : pAd->StaCfg.Psm);
+#endif
 			}
 		}
 		else

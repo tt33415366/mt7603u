@@ -34,11 +34,11 @@
 #define CFG80211_GetEventDevice(__pAd) __pAd->net_dev
 #endif	/* RT_CFG80211_P2P_CONCURRENT_DEVICE */
 
-#ifdef RT_CFG80211_P2P_SUPPORT
 #define CFG_GO_BSSID_IDX (MAIN_MBSSID + 1)
 
 #define RESTORE_CH_TIME 200
 #define MAX_ROC_TIME 600
+#ifdef RT_CFG80211_P2P_SUPPORT
 
 //yiwei debug for P2P 7.1.3
 //yiwei tmp hard code

@@ -160,8 +160,10 @@ VOID APMlmeDynamicTxRateSwitching(RTMP_ADAPTER *pAd)
 				pAd->bDisableRtsProtect = FALSE;
 			}
 
+#ifdef CONFIG_STA_SUPPORT
             AsicUpdateProtect(pAd, pAd->MlmeAux.AddHtInfo.AddHtInfo2.OperaionMode,
                         ALLN_SETPROTECT, pAd->bDisableBGProtect, pAd->bNonGFExist);
+#endif /* CONFIG_STA_SUPPORT */
 
 			continue;
 		}

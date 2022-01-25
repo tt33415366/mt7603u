@@ -1,4 +1,5 @@
 #MODE - STA or AP
+WIFI_MODE=AP
 ifeq ($(WIFI_MODE),)
 RT28xx_MODE = STA
 else
@@ -53,6 +54,7 @@ RTMP_SRC_DIR = $(RT28xx_DIR)/RT$(MODULE)
 #PLATFORM = MSTAR
 #PLATFORM = HISILICON
 #PLATFORM = HE_TV
+PLATFORM = NVT98321
 
 LINUX_SRC =
 CROSS_COMPILE =
@@ -137,6 +139,13 @@ $(warning =============================================)
 $(warning CC=$(CC) for wifi driver LINUX_SRC=$(LINUX_SRC))
 $(warning TARGET=$(TARGET))
 $(warning =============================================)
+endif
+
+ifeq ($(PLATFORM),NVT98321)
+LINUX_SRC = /home/lea/Debug/novatek/na51068_linux_sdk/BSP/linux-kernel
+CROSS_COMPILE = /opt/ivot/arm-ca9-linux-gnueabihf-6.5/usr/bin/arm-ca9-linux-gnueabihf- 
+#CC = $(CROSS_COMPILE)gcc
+#CXX = $(CROSS_COMPILE)g++
 endif
 
 export OSABL RT28xx_DIR RT28xx_MODE LINUX_SRC CROSS_COMPILE CROSS_COMPILE_INCLUDE PLATFORM RELEASE CHIPSET MODULE RTMP_SRC_DIR LINUX_SRC_MODULE TARGET HAS_WOW_SUPPORT PREALLOC
@@ -244,10 +253,15 @@ else
 ifeq ($(PLATFORM),FREESCALE8377)
 	$(MAKE) ARCH=powerpc CROSS_COMPILE=$(CROSS_COMPILE) -C  $(LINUX_SRC) SUBDIRS=$(RT28xx_DIR)/os/linux modules
 else
+ifeq ($(PLATFORM),NVT98321)
+	$(MAKE) ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) -C  $(LINUX_SRC) SUBDIRS=$(RT28xx_DIR)/os/linux modules
+else
 #build mt7603u_sta.ko
 	$(MAKE) -C $(LINUX_SRC) SUBDIRS=$(RT28xx_DIR)/os/linux modules
 endif
+endif
 endif #DM6446
+
 
 ifeq ($(OSABL),YES)
 	cp -f os/linux/Makefile.6.netif $(RT28xx_DIR)/os/linux/Makefile
@@ -255,8 +269,9 @@ ifeq ($(OSABL),YES)
 endif
 
 ifeq ($(RT28xx_MODE),AP)
+	mkdir -p ./tftpboot
 ifneq ($(PLATFORM),BB_SOC)
-	cp -f $(RT28xx_DIR)/os/linux/$(MODULE)_ap.ko /tftpboot
+	cp -f $(RT28xx_DIR)/os/linux/$(MODULE)_ap.ko ./tftpboot
 ifeq ($(OSABL),YES)
 	cp -f $(RT28xx_DIR)/os/linux/$(MODULE)_ap_util.ko /tftpboot
 	cp -f $(RT28xx_DIR)/os/linux/$(MODULE)_ap_net.ko /tftpboot
@@ -266,8 +281,9 @@ else #BB_SOC
 	/root/bin/lzma e os/linux/$(MODULE)_ap.ko os/linux/$(MODULE)_ap.ko.lzma
 endif #BB_SOC
 else #AP	
-ifeq ($(RT28xx_MODE),APSTA)
-	cp -f $(RT28xx_DIR)/os/linux/$(MODULE)_apsta.ko /tftpboot
+ifeq ($(RT28xx_MODE),APSTA)]
+	mkdir -p ./tftpboot
+	cp -f $(RT28xx_DIR)/os/linux/$(MODULE)_apsta.ko ./tftpboot
 ifeq ($(OSABL),YES)
 	cp -f $(RT28xx_DIR)/os/linux/$(MODULE)_apsta_util.ko /tftpboot
 	cp -f $(RT28xx_DIR)/os/linux/$(MODULE)_apsta_net.ko /tftpboot
