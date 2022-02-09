@@ -1429,7 +1429,13 @@ INT RTMPAPPrivIoctlSet(
 	RTMP_STRING *this_char, *value;
 	INT Status = NDIS_STATUS_SUCCESS;
 
-	while ((this_char = strsep((char **)&pIoctlCmdStr->u.data.pointer, ",")) != NULL)
+	char buff[512], *buf = buff;
+
+	if (copy_from_user(&buff, pIoctlCmdStr->u.data.pointer, pIoctlCmdStr->u.data.length)) {
+		return -EFAULT;
+	}
+
+	while ((this_char = strsep((char **)&buf, ",")) != NULL)
 	{
 		if (!*this_char)
 			 continue;
